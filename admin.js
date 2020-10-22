@@ -26,7 +26,7 @@ app.use(morgan('dev'));
 
 DBConnection
     .authenticate()
-    .then(() => { console.info(chalk.success(`Admin DB Connection Established Successfully!`)); })
+    .then(() => { console.info(`Admin DB Connection Established Successfully!`); })
     .then(() => {
         app.use('/admin', AdminRoutesAPI(DBConnection, firebaseBucket));
         console.info(chalk.success(`Routes Established Successfully!`));
