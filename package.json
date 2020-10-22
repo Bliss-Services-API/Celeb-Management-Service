@@ -4,7 +4,7 @@
   "description": "Admin Service for Managing other Services running in the backend",
   "main": "admin.js",
   "scripts": {
-    "dev-start": "nodemon admin.js",
+    "dev-start": "node admin.js",
     "dev-sequelize-migrate": "sequelize db:migrate",
     "dev-sequelize-unmigrate": "sequelize db:migrate:undo --name CelebProfilesTable.js"
   },
