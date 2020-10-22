@@ -2,7 +2,6 @@
 
 require('dotenv').config();
 
-const chalk = require('./chalk.console');
 const DBConnection = require('./connections/PGConnection');
 const bodyParser = require('body-parser');
 const express = require('express');
