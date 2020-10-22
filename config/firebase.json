@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "bigwig-media-server",
+  "private_key_id": "4a6a4717392d1d28fc7d15e84a452ae17eae2a79",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDMNC4MhPeoMJlD\njQ4Q7QPs3lpyN5xt0XaHsKwQg/YI2ymho92iQ3b2SjVfNmEQRTHvaayNcrfG9fG5\nF3XSDbSHx1TQLxrxKJ7sEa3pPTvCzGJPdpWnoZuxjlghF2iILiY0WGy5OI78tfBu\nQX577Qj375v3ipDlEEJFavRDVyowWcaTYMJVu1pb0EVHWf2aEsBMNfm92lxAQ4QR\nUNTEkkQUvDKYsecDJ+jBY1YkNVUZ8MK/iXIzR0BthBLJa26h/UFz/2gwHnhETDUV\nuT50se+3H4kDYRZAwlCoyrwUzsUnzHndJLeF4R6K2lDQuxvjR6H5UDiBempfO886\nJ70YHtQxAgMBAAECggEAAijBQku3PIAY4YTGMQQVIw6eYNckNWKL19kPIdk7IYH8\nFzjxF4R8PzFMFXZG8B+PwOxf7YLYvDk09NULEqFalTaPGoJgbey16xQv+kpL3SD7\njQV+F38oiPo1iX4Yjr/Xxdv6pGJHZrf7CIDKuhrJpPmc0/LnT0IBChKGs3lprIDY\niJMai0uie+hOSBx3j4kr5dCZn1wngulQA14q/rnKH01rOzPNklYFjtpm7Pz1W+T2\nu7ZuVLH6JlvdQFH9vPMs6V474bLNQbeVAVoOfv2bDPqKcvQdDkr2OYPnUzgTZYPX\nHkoPHSqMVQC1eYegMt3G0kk0b58fKAWJrY/PyQrsCQKBgQDogmOTT7ZswuvpBh9j\nTNExCH0oDuNV7mZsPPzX/BxR5MV6ZQijBOtH1Vv+W4CyFPrn1efm8y6GsuwxuhAp\nHlDziuHT0DE3Thw8o/t+MHU0K9oO3WjixVG/w8RA/7VwanI4KOOgLiY9OXYVLei1\nHKm0q3GxG4QHeKUzIkXKl33XqwKBgQDg1bLX7J8Mdc+lHrZHwszR5y6hW0MZfrag\nhKJyE87Hq2+xfdbfZSvX1+z5T2iY6Mk6pkhRPxif2cR1pdrGZtDq+o0l892uPvsu\noFGI0zLA4Uwl8Al3LerllIyTxHK8f5JCb/Nv6Ry4Ucm+N9+h1BgZkdVf+e//iUIc\ntf6U0VL3kwKBgQCXvbjkxAoncxLpcmB7uv9vg73Crey6ASuBClBtWRDWdXpYBaYc\nVjKDIAC4wNj93+lb8mM1e5HqwMybK3Yuj6V/PC1jwiTMlkKhZNfWJCPpl5DpUKCK\nFwLiJw5m6TttkVrXwf/EYzn7jQu+iMatpHYw/g7l6jJBegA+neh0bmfnnwKBgQCM\nS+04nde1j8JNt/domh7zED5hw7AANbjCO2Geq8uJfunIqMyvQ9Ny8bNW8v1DBWek\nKGTSBfxYqyvTefYlfbz6E/SF7UG0XGqi8rlOFvQBtdSti7ZsXwPH1MVP4/Lwuu5K\ndM9EUwNv5OFtyDHNKqsLMZwjMrRXEZBmmA5PULtj7wKBgCHYLBbH6y+JE6OR4MQb\ng/iy6lgPaVem+iHnd9R1zxh8FcYlRd7dYtlugvuMGWDPnTvVZiSh7Y1PCskrUAsc\n+tNHK4+m7mS+jN1sRTyZSLYDmzZ+62nASwJBTO+wHTbmWnIZxwftsl5ldy6Os2IU\nofVMXTlW+OAu+jaPhWe/N80X\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-kysuy@bigwig-media-server.iam.gserviceaccount.com",
+  "client_id": "116423720585573813309",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-kysuy%40bigwig-media-server.iam.gserviceaccount.com"
+}
