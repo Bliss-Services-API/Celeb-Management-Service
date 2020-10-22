@@ -29,7 +29,7 @@ DBConnection
     .then(() => { console.info(`Admin DB Connection Established Successfully!`); })
     .then(() => {
         app.use('/admin', AdminRoutesAPI(DBConnection, firebaseBucket));
-        console.info(chalk.success(`Routes Established Successfully!`));
+        console.info(`Routes Established Successfully!`);
     })
     .catch((err) => { console.error(`Admin DB Connection Failed!\nError:${err}`); })
 
