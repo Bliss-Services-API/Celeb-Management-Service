@@ -32,8 +32,8 @@ DBConnection
         app.use('/admin', AdminRoutesAPI(DBConnection, firebaseBucket));
         console.info(chalk.success(`Routes Established Successfully!`));
     })
-    .catch((err) => { console.error(chalk.error(`Admin DB Connection Failed!\nError:${err}`)); })
+    .catch((err) => { console.error(`Admin DB Connection Failed!\nError:${err}`); })
 
 app.listen(PORT, () => {
-    console.log(chalk.info(`Server is running on port ${PORT}`));
+    console.log(`Server is running on port ${PORT}`);
 })
