@@ -3,7 +3,6 @@
 const router = require('express').Router();
 const ProfileController = require('../controllers');
 
-
 module.exports = (DBConnection, firebaseBucket) => {
 
     const CelebProfileController = ProfileController(DBConnection, firebaseBucket);

@@ -1,7 +1,6 @@
 'use strict'
 
 const Models = require('../models');
-const chalk = require('../chalk.console');
 
 const deleteCelebImage = async (celebProfileData, firebaseBucket) => {
     return new Promise(async (resolve, reject) => {
@@ -12,7 +11,6 @@ const deleteCelebImage = async (celebProfileData, firebaseBucket) => {
                 await file.delete();
                 resolve('Celeb Image Deleted!')
             } else {
-                console.log(chalk.info('[01/03] : ') + "" + chalk.info(`Image File Doesn't Exist! It seems it was already deleted.`))
                 resolve(`Image File Doesn't Exist! It seems it was already deleted.`);
             }
         }
@@ -59,12 +57,12 @@ module.exports = (DBConnection, firebaseBucket) => {
         })
         
         .then(() => { 
-            console.log(chalk.success('Celeb Profile Deleted Successfully!'));
+            console.log('Celeb Profile Deleted Successfully!');
             return 'Celeb Profile Deleted Successfully!!'
         })
         
         .catch((err) => {
-            console.error(chalk.error(`Error Deleting Celeb Profile!\n${err}`))
+            console.error(`Error Deleting Celeb Profile!\n${err}`);
             return {Error: err};
         });
     };
@@ -96,19 +94,15 @@ module.exports = (DBConnection, firebaseBucket) => {
                     return celebProfileModel.destroy({
                         where: { celeb_id: celebId }
                     }, {transaction: transactionKey})
-
-                    .then(() => {
-                        console.info(chalk.info('[03/03] : ') + "" + chalk.success('Profile Section Deleted Successfully!'))
-                    })
                 })
             })
         })
         .then(() => { 
-            console.log(chalk.success(`${req.body['celeb_name']} profile has been deleted successfully!`));
+            console.log(`${req.body['celeb_name']} profile has been deleted successfully!`);
             return `${req.body['celeb_name']} profile has been deleted successfully!`;
         })
         .catch((err) => {
-            console.error(chalk.error(`Error Deleting Celeb Profile!\n${err}`))
+            console.error(`Error Deleting Celeb Profile!\n${err}`);
             return {Error: err};
         });
     };
