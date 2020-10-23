@@ -5,11 +5,11 @@
   "main": "admin.js",
   "scripts": {
     "dev-start": "set NODE_ENV=developement && node admin.js",
-    "dev-sequelize-migrate": "set NODE_ENV=developement && sequelize db:migrate",
-    "dev-sequelize-unmigrate": "set NODE_ENV=developement && sequelize db:migrate:undo --name CelebProfilesTable.js",
+    "dev-sequelize-migrate": "sequelize db:migrate --env development",
+    "dev-sequelize-unmigrate": "sequelize db:migrate:undo --env development --name CelebProfilesTable.js",
     "prod-start": "set NODE_ENV=production && node admin.js",
-    "prod-sequelize-migrate": "set NODE_ENV=production && sequelize db:migrate",
-    "prod-sequelize-unmigrate": "set NODE_ENV=production && sequelize db:migrate:undo --name CelebProfilesTable.js"
+    "prod-sequelize-migrate": "sequelize db:migrate",
+    "prod-sequelize-unmigrate": "sequelize db:migrate:undo --name CelebProfilesTable.js"
   },
   "author": "Sarthak Joshi",
   "license": "ISC",
