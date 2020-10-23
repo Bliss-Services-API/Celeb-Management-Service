@@ -8,6 +8,9 @@ const connection = new Sequelize(dbConfig.development.database, dbConfig.develop
     port: dbConfig.development.port,
     dialect: dbConfig.development.dialect,
     logging: console.log,
+    dialectOptions: {
+        ssl: true
+    },
     pool: {
         max: 5,
         min: 0,
