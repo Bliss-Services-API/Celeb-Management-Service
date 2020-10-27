@@ -1,15 +1,15 @@
 {
-  "name": "admin-service",
+  "name": "celeb-service",
   "version": "0.1.0",
-  "description": "Admin Service for Managing other Services running in the backend",
-  "main": "admin.js",
+  "description": "Service for Managing Celebrites in the Bliss App",
+  "main": "celeb.js",
   "scripts": {
-    "dev-start": "set NODE_ENV=developement && node admin.js",
-    "dev-sequelize-migrate": "sequelize db:migrate --env development",
-    "dev-sequelize-unmigrate": "sequelize db:migrate:undo --env development --name CelebProfilesTable.js",
-    "prod-start": "set NODE_ENV=production && node admin.js",
-    "prod-sequelize-migrate": "sequelize db:migrate",
-    "prod-sequelize-unmigrate": "sequelize db:migrate:undo --name CelebProfilesTable.js"
+    "dev-start": "nodemon celeb.js",
+    "dev-migrate": "sequelize db:migrate --env development",
+    "dev-unmigrate": "sequelize db:migrate:undo:all --env development",
+    "start": "set NODE_ENV=production && node celeb.js",
+    "migrate": "sequelize db:migrate --env production",
+    "unmigrate": "sequelize db:migrate:undo:all --env production"
   },
   "author": "Sarthak Joshi",
   "license": "ISC",
@@ -22,10 +22,10 @@
     "pg": "8.3.3",
     "pg-hstore": "2.3.3",
     "sequelize": "6.3.5",
-    "sequelize-cli": "^6.2.0"
+    "sequelize-cli": "^6.2.0",
+    "chalk": "^4.1.0"
   },
   "devDependencies": {
-    "chalk": "^4.1.0",
     "nodemon": "^2.0.4"
   }
 }

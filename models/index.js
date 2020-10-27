@@ -1,12 +1,20 @@
-module.exports = (pgConnection) => {
-    const CelebProfileModel = require('./CelebProfileModel')(pgConnection);
-    const CelebStatsModel = require('./CelebStatsModel')(pgConnection);
+'use strict';
 
-    CelebStatsModel.belongsTo(CelebProfileModel, { foreignKey: 'celeb_id' });
-    CelebProfileModel.hasOne(CelebStatsModel, { foreignKey: 'celeb_id' });
+/**
+ * 
+ * Exporting all the Models in the app, including their associations
+ * 
+ * @param {Sequelize} databaseConnection Sequelize object
+ */
+module.exports = (databaseConnection) => {
+    const celebProfileModel = require('./CelebProfileModel')(databaseConnection);
+    const celebStatsModel = require('./CelebStatsModel')(databaseConnection);
+
+    celebStatsModel.belongsTo(celebProfileModel, { foreignKey: 'celeb_name' });
+    celebProfileModel.hasOne(celebStatsModel, { foreignKey: 'celeb_name' });
 
     return {
-        CelebProfileModel,
-        CelebStatsModel
+        celebProfileModel,
+        celebStatsModel
     };
 };

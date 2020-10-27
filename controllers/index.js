@@ -1,13 +1,18 @@
-module.exports = (DBConnection, firebaseBucket) => {
-    const CreateProfile = require('./ProfileCreate')(DBConnection, firebaseBucket).createNewCelebAccount;
-    const DeleteProfileById = require('./ProfileDelete')(DBConnection, firebaseBucket).deleteCelebProfileById;
-    const DeleteProfileByName = require('./ProfileDelete')(DBConnection, firebaseBucket).deleteCelebProfileByName;
-    const FetchCelebProfile = require('./FetchCelebProfile')(DBConnection, firebaseBucket).getAllCelebProfile;
+'use strict';
+
+/**
+ * 
+ * Exporting all the controllers for handling routes of the server
+ * 
+ * @param {Sequelize} databaseConnection Sequelize object
+ * @param {Firebase Object} firebaseBucket Firebase bucket object
+ */
+module.exports = (databaseConnection, firebaseBucket) => {
+    const profileDataController = require('./ProfileDataController')(databaseConnection, firebaseBucket);
+    const profileImageController = require('./ProfileImageController')(firebaseBucket);
     
     return {
-        CreateProfile,
-        DeleteProfileById,
-        DeleteProfileByName,
-        FetchCelebProfile
+        profileDataController,
+        profileImageController  
     };
 }
