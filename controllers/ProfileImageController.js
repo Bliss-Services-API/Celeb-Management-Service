@@ -72,10 +72,16 @@ module.exports = (firebaseBucket) => {
             };
         }
 
-        return {
-            URL: celebImageUploadURL,
-            ImageOverriden: false,
-            Message: 'DONE'
+        else if(!fileExists["ImageExists?"]) {
+            return {
+                URL: celebImageUploadURL,
+                ImageOverriden: false,
+                Message: 'DONE'
+            }
+        }
+
+        else {
+            throw new Error("Bad Request")
         }
     }
     

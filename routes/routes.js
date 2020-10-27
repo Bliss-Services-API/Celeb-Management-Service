@@ -32,7 +32,7 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
         }
         catch(err) {
             console.error(chalk.error(`{ERR: ${err}}`));
-            res.send({
+            res.status(401).send({
                 ERR: err
             });
         }
