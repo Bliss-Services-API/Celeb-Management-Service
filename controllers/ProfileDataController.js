@@ -27,6 +27,15 @@ module.exports = (databaseConnection, firebaseBucket) => {
      * @param {String} celebImageType MIME type of celeb image, viz., png, jpeg, ... etc
      */
     const createNewCelebAccount = async (celebName, celebCategory, celebIntroduction, celebResponseTime, celebImageType) => {
+        if(typeof celebName !== 'string' 
+        || typeof celebImageType !== 'string' 
+        || typeof celebCategory !== 'string'
+        || typeof celebIntroduction !== 'string'
+        || typeof celebResponseTime !== 'number'
+        || celebCategory.length !== 8) {
+            throw new Error(`Bad URL Params`);
+        };
+
         const imageFileName = `celebs/${celebName}.${celebImageType}`;
         const celebImageReference = firebaseBucket.file(imageFileName);
         const celebJoiningDate = new Date().getTime();
@@ -100,6 +109,10 @@ module.exports = (databaseConnection, firebaseBucket) => {
      * 
      */
     const deleteCelebProfile = async celebName => {
+        if(typeof celebName !== 'string' ) {
+            throw new Error(`Bad URL Params`);
+        };
+
         return databaseConnection.transaction(async (transactionKey) => {
             const celebProfileDataValues = await celebProfileModel.findAll({
                                                 attributes: ['celeb_image_link'],

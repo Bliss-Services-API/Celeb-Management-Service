@@ -12,6 +12,9 @@ module.exports = (firebaseBucket) => {
      * @param {String} imageFileName Name of the image file stored in the google cloud storage
      */
     const checkImageExist = async (imageFileName) => {
+        if(typeof imageFileName !== 'string') {
+            throw new Error(`Bad URL Params`);
+        };
         const imageFile = firebaseBucket.file(imageFileName);
         const imageExists = await imageFile.exists();
 
@@ -28,6 +31,9 @@ module.exports = (firebaseBucket) => {
      * 
      */
     const deleteImage = async (imageFileName) => {
+        if(typeof imageFileName !== 'string') {
+            throw new Error(`Bad URL Params`);
+        };
         const imageFile = firebaseBucket.file(imageFileName);
         const imageFileDeleteResponse = await imageFile.delete();
 
@@ -48,6 +54,10 @@ module.exports = (firebaseBucket) => {
      * @param {boolean} imageOverrite if true, will override the image if already exists. Else, if image already exists, will throw an error
      */
     const getImageUploadSignedURL = async (celebName, imageType, imageOverrite = false) => {
+        if(typeof celebName !== 'string' || typeof imageType !== 'string' || typeof imageOverrite !== 'boolean') {
+            throw new Error(`Bad URL Params`);
+        };
+
         const celebFileName = `celebs/${celebName}.${imageType}`;
         const celebImageFile = firebaseBucket.file(celebFileName);
 
