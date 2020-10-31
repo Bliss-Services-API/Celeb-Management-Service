@@ -50,16 +50,14 @@ module.exports = (databaseConnection, firebaseBucket) => {
 
         const imageUploaded = await celebImageReference.exists();
         if(imageUploaded[0]){
-            return databaseConnection.transaction((transactionKey) => {
-                return celebProfileModel.create(celebProfileData, {transaction: transactionKey})
-                .then(() => {
-                    return celebStatsModel.create(celebStatsData, {transaction: transactionKey})
-                })
-                .then(() => {
-                    return {
-                        Message: 'DONE'
-                    }
-                })
+            return databaseConnection.transaction(async (transactionKey) => {
+                await celebProfileModel.create(celebProfileData, {transaction: transactionKey})
+                await celebStatsModel.create(celebStatsData, {transaction: transactionKey})
+                
+                return {
+                    Message: 'DONE',
+                    Response: 'Profile Created Successfully!'
+                }
             })
             .catch((err) => {
                 return new Error(err);
@@ -102,40 +100,35 @@ module.exports = (databaseConnection, firebaseBucket) => {
      * 
      */
     const deleteCelebProfile = async celebName => {
-        try {
-            return databaseConnection.transaction((transactionKey) => {
-                return celebProfileModel.findAll({
-                        attributes: ['celeb_image_link'],
-                        where: { celeb_name: celebName }
-                    }, {transaction: transactionKey})
-                    
-                .then(async (celebProfileDataFetched) => {
-                    const celebImageFileName = celebProfileDataFetched[0]['dataValues']['celeb_image_link'];
-                    const celebImageDelete = await imageController(firebaseBucket).deleteImage(celebImageFileName);
-                    return celebImageDelete;
-                })
-                .then((celebImageDelete) => {
-                    if(celebImageDelete.Message === 'DONE') {
-                        return celebStatsModel.destroy({where: { celeb_name: celebName }}, {transaction: transactionKey})
-                        .then(() => {
-                            return celebProfileModel.destroy({where: { celeb_name: celebName }}, {transaction: transactionKey});
-                        })
-                    }
-                })
-            })
-            .then(() => {
+        return databaseConnection.transaction(async (transactionKey) => {
+            const celebProfileDataValues = await celebProfileModel.findAll({
+                                                attributes: ['celeb_image_link'],
+                                                where: { celeb_name: celebName }
+                                            }, {transaction: transactionKey});
+
+            if(celebProfileDataValues.length === 0) {
                 return {
                     Message: 'DONE',
-                    CelebProfileDeleted: celebName
+                    Response: 'No Such Profile Exists.'
                 };
-            })
-            .catch((err) => {
-                throw new Error(err);
-            });
-        }
-        catch(err) {
+            } else {
+                const celebImageFileName = celebProfileDataFetched[0]['dataValues']['celeb_image_link'];
+                const celebImageDelete = await imageController(firebaseBucket).deleteImage(celebImageFileName);
+
+                if(celebImageDelete.Message === 'DONE') {
+                    await celebStatsModel.destroy({where: { celeb_name: celebName }}, {transaction: transactionKey});
+                    await celebProfileModel.destroy({where: { celeb_name: celebName }}, {transaction: transactionKey});
+                }
+                return {
+                    Message: 'DONE',
+                    Response: 'Profile Deleted Successfully!',
+                    CelebName: celebName
+                };
+            }
+        })
+        .catch((err) => {
             throw new Error(err);
-        }
+        })
     };
 
     return {

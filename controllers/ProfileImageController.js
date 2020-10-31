@@ -66,17 +66,19 @@ module.exports = (firebaseBucket) => {
             throw new Error(`Celeb Image Already Exists`);
         } else if(fileExists["ImageExists?"] && imageOverrite) {
             return {
+                Message: 'DONE',
+                Response: `Celeb Image Already Exists. Uploading will override the image`,
                 URL: celebImageUploadURL,
                 ImageOverriden: true,
-                Message: `Celeb Image Already Exists. Uploading will override the image`
             };
         }
 
         else if(!fileExists["ImageExists?"]) {
             return {
+                Message: 'DONE',
+                Response: `Image Uploaded Successfully!`,
                 URL: celebImageUploadURL,
                 ImageOverriden: false,
-                Message: 'DONE'
             }
         }
 
