@@ -33,7 +33,7 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
         catch(err) {
             console.error(chalk.error(`{ERR: ${err}}`));
             res.status(401).send({
-                ERR: err
+                ERR: err.message
             });
         }
     });
@@ -58,7 +58,7 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
         catch(err) {
             console.error(chalk.error(`{ERR: ${err}}`));
             res.send({
-                ERR: err
+                ERR: err.message
             });
         }
     })
@@ -84,7 +84,7 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
         catch(err) {
             console.error(chalk.error(`{ERR: ${err}}`));
             res.send({
-                ERR: err
+                ERR: err.message
             });
         }
     })
@@ -106,7 +106,7 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
         catch(err) {
             console.error(chalk.error(`{ERR: ${err}}`));
             res.send({
-                ERR: err
+                ERR: err.message
             });
         }
     });
@@ -126,7 +126,7 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
         catch(err) {
             console.error(chalk.error(`{ERR: ${err}}`));
             res.send({
-                ERR: err
+                ERR: err.message
             });
         }
     });
