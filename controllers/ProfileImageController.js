@@ -86,7 +86,6 @@ module.exports = (firebaseBucket) => {
         else if(!fileExists["ImageExists?"]) {
             return {
                 Message: 'DONE',
-                Response: `Image Uploaded Successfully!`,
                 URL: celebImageUploadURL,
                 ImageOverriden: false,
             }
