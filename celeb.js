@@ -55,6 +55,7 @@ databaseConnection
     .authenticate()
     .then(() => console.info(chalk.success(`Celebs Database Connection Established Successfully!`)))
     .then(() => app.use('/admin/celeb', celebRoutes(databaseConnection, S3Client)))
+    .then(() => app.get('/ping', (req, res) => res.send('OK')))
     .then(() => console.info(chalk.success(`Routes Established Successfully!`)))
     .catch((err) => console.error(chalk.error(`Celebs Database Connection Failed!\nError:${err}`)));
 
