@@ -3,48 +3,43 @@
 
 /**
  * 
- * ProfileDataContoller handle the requests for the celeb profile operations.
- * Operations include profile creation, fetching profile, deleting profile.
+ * Controller for Handling Celeb Data uploaded in the Postgresql database in the AWS-RDS
  * 
- * @param {Object} databaseConnection Sequelize object, which contains the database connection
- * @param {Object} firebaseBucket Object containing the firebase bucket object
+ * @param {Sequelize} databaseConnection Sequelize Object, containing the connection for the Database
+ * @param {aws-sdk object} S3Client Object containing the AWS S3 reference
  * 
  */
-module.exports = (databaseConnection, firebaseBucket) => {
+module.exports = (databaseConnection, S3Bucket) => {
+    //Importing Modules
     const Models = require('../models');
     const imageController = require('./ProfileImageController');
+
+    //Initializing Variablse
     const celebProfileModel = Models(databaseConnection).celebProfileModel;
     const celebStatsModel = Models(databaseConnection).celebStatsModel;
-
+    
     /**
      * 
-     * Function which will create the record of the celeb in both the profile db, and in the stats db
+     * Function for uploading celeb data in the database, and completing the profile creation
      * 
-     * @param {String} celebName Celeb Name, who wants to create a new account
-     * @param {String (8 bits)} celebCategory Bits represents the category in sequence, in which the celeb works in
-     * @param {Text} celebIntroduction Celeb's brienf introduction
-     * @param {BigInt} celebResponseTime Response time, according to the celeb
-     * @param {String} celebImageType MIME type of celeb image, viz., png, jpeg, ... etc
+     * @param {string} celebName Name of the celeb, whose profile is to be created
+     * @param {string} celebCategory 8 bits, representing the category celeb works
+     * @param {text} celebIntroduction Text, introducing celeb
+     * @param {number} celebResponseTime BigInt, representing how many seconds does it take for celeb to
+     * respond to the request from the clients
+     * @param {string} celebImageLink URL for downloading celeb image from the CDN (cached)
+     * 
+     * @returns JSON responding whether the profile has been created
+     * 
      */
-    const createNewCelebAccount = async (celebName, celebCategory, celebIntroduction, celebResponseTime, celebImageType) => {
-        if(typeof celebName !== 'string' 
-        || typeof celebImageType !== 'string' 
-        || typeof celebCategory !== 'string'
-        || typeof celebIntroduction !== 'string'
-        || typeof celebResponseTime !== 'number'
-        || celebCategory.length !== 8) {
-            throw new Error(`Bad URL Params`);
-        };
-
-        const imageFileName = `celebs/${celebName}.${celebImageType}`;
-        const celebImageReference = firebaseBucket.file(imageFileName);
+    const createNewCelebAccount = async (celebName, celebCategory, celebIntroduction, celebResponseTime, celebImageLink) => {
         const celebJoiningDate = new Date().getTime();
 
         const celebProfileData = {
             celeb_name: celebName,
             celeb_category: celebCategory,
             celeb_introduction: celebIntroduction,
-            celeb_image_link: imageFileName,
+            celeb_image_link: celebImageLink,
             celeb_joining_date: celebJoiningDate
         };
 
@@ -54,39 +49,34 @@ module.exports = (databaseConnection, firebaseBucket) => {
             celeb_likes: 0,
             celeb_response_rate: 100,
             celeb_response_time: celebResponseTime,
-            celeb_last_online: new Date().getTime()
+            celeb_last_online: celebJoiningDate
         };
 
-        const imageUploaded = await celebImageReference.exists();
-        if(imageUploaded[0]){
-            return databaseConnection.transaction(async (transactionKey) => {
-                await celebProfileModel.create(celebProfileData, {transaction: transactionKey})
-                await celebStatsModel.create(celebStatsData, {transaction: transactionKey})
-                
-                return {
-                    Message: 'DONE',
-                    Response: 'Profile Created Successfully!'
-                }
-            })
-            .catch((err) => {
-                return new Error(err);
-            });
-        }
-        else {
-            throw new Error(`Please Upload Image Before Uploading Data`);
-        }
-
+        return databaseConnection.transaction(async (transactionKey) => {
+            await celebProfileModel.create(celebProfileData, {transaction: transactionKey});
+            await celebStatsModel.create(celebStatsData, {transaction: transactionKey});
+            
+            return {
+                Message: 'DONE',
+                Response: 'Profile Created Successfully!'
+            }
+        })
+        .catch((err) => {
+            return new Error(err);
+        });
     }
 
     /**
      * 
-     * Function to fetch all the profile of the celebs from the profile db and the stats db.
+     * Function for getting all of the celeb profile, present in the database
+     * 
+     * @returns JSON, containing the array of Celebs
      * 
      */
     const getAllCelebProfile = async () => {
         const celebsFetched = await celebProfileModel.findAll(
-            { attributes: ['celeb_name', 'celeb_category', 'celeb_introduction', 'celeb_joining_date']},
-            { includes: [{ model: celebStatsModel }] });
+            { includes: [{ model: celebStatsModel }] }
+        );
 
         const celebs = [];
 
@@ -99,45 +89,49 @@ module.exports = (databaseConnection, firebaseBucket) => {
             Celebs: celebs
         };
     }
-    
+
     /**
      * 
-     * Function to delete the celeb image, then the celeb records from profile db, and then
-     * the stats db.
+     * Function to check whether celeb profile exists in the database
      * 
-     * @param {String} celebName Name of the Celebrity, whose profile wants to be deleted
+     * @param {string } celebName Name of the celeb, whose profile is being checked
+     * @returns boolean true, if profile exists. false, if it doesn't
      * 
      */
-    const deleteCelebProfile = async celebName => {
-        if(typeof celebName !== 'string' ) {
-            throw new Error(`Bad URL Params`);
-        };
-
-        return databaseConnection.transaction(async (transactionKey) => {
-            const celebProfileDataValues = await celebProfileModel.findAll({
-                                                attributes: ['celeb_image_link'],
-                                                where: { celeb_name: celebName }
-                                            }, {transaction: transactionKey});
-
-            if(celebProfileDataValues.length === 0) {
-                return {
-                    Message: 'DONE',
-                    Response: 'No Such Profile Exists.'
-                };
-            } else {
-                const celebImageFileName = celebProfileDataFetched[0]['dataValues']['celeb_image_link'];
-                const celebImageDelete = await imageController(firebaseBucket).deleteImage(celebImageFileName);
-
-                if(celebImageDelete.Message === 'DONE') {
-                    await celebStatsModel.destroy({where: { celeb_name: celebName }}, {transaction: transactionKey});
-                    await celebProfileModel.destroy({where: { celeb_name: celebName }}, {transaction: transactionKey});
-                }
-                return {
-                    Message: 'DONE',
-                    Response: 'Profile Deleted Successfully!',
-                    CelebName: celebName
-                };
+    const checkIfProfileExists = async celebName => {
+        const celebProfile = await celebProfileModel.findAll({
+            where: {
+                celeb_name: celebName
             }
+        });
+
+        if(celebProfile.length === 0) {
+            return false;
+        } else {
+            return true;
+        };
+    }
+    
+     /**
+     * 
+     * Function to delete celeb profile and the image from the database and AWS S3
+     * 
+     * @param {string } celebName Name of the celeb, whose profile is being checked
+     * @param {string} imageFileName Name of the Celeb Image File (.png)
+     * @returns name of the celeb whose profile has been deleted
+     * 
+     */
+    const deleteCelebProfile = async (celebName, imageFileName) => {
+        return databaseConnection.transaction(async (transactionKey) => {
+            await celebStatsModel.destroy({where: { celeb_name: celebName }}, {transaction: transactionKey});
+            await celebProfileModel.destroy({where: { celeb_name: celebName }}, {transaction: transactionKey});
+            await imageController(databaseConnection, S3Bucket).deleteImage(imageFileName);
+
+            return {
+                Message: 'DONE',
+                Response: 'Profile Deleted Successfully!',
+                CelebName: celebName
+            };
         })
         .catch((err) => {
             throw new Error(err);
@@ -145,6 +139,6 @@ module.exports = (databaseConnection, firebaseBucket) => {
     };
 
     return {
-        createNewCelebAccount, getAllCelebProfile, deleteCelebProfile
+        createNewCelebAccount, getAllCelebProfile, deleteCelebProfile, checkIfProfileExists
     };
 }

@@ -2,37 +2,88 @@
 
 /**
  * 
- * Routes handled by the server. These routes are used to access celeb profile data and manipulate them.
+ * Routes handled by the server. These routes are used to access celeb profile data and images and 
+ * manipulate them using various routes.
  * 
  * @param {Object} databaseConnection Sequelize object, which contains the database connection
- * @param {Object} firebaseBucket Object containing the firebase bucket object
- * @param {Object} chalk Object extending chalk.js attributes
+ * @param {Object} S3Client AWS S3 Client Object
  * 
  */
-module.exports = (databaseConnection, firebaseBucket, chalk) => {
+module.exports = (databaseConnection, S3Bucket) => {
 
-    const router = require('express').Router();
-    const profileController = require('../controllers');
-    const celebProfileController = profileController(databaseConnection, firebaseBucket);
+    //Import modules
+    const fs = require('fs');
+    const multer = require('multer');
+    const chalk = require('../chalk.console');
+    const express = require('express');
+    const controller = require('../controllers')(databaseConnection, S3Bucket);
+
+    //Initialize Variables
+    const router = express.Router();
+    const celebProfileDataMultipart = multer({dest: 'tmp/celeb-images/'});
+    const profileDataController = controller.profileDataController;
+    const profileImageController = controller.profileImageController;
+
 
     /**
      * 
-     * Route to GET signedURL for PUT celeb image in GCS
+     * Route to GET if the Image exists in the AWS S3 Bucket
      * 
      */
-    router.get('/profile/image/upload-url', async (req, res) => {
-        const celebName = req.query.celeb_name;
-        const celebImageType = req.query.image_type;
-        const override = req.query.override;
+    router.get(`/image/exists`, async (req, res) => {
+        const imageFileName = req.query.image_file_name;
 
         try {
-            const response = await celebProfileController.profileImageController.getImageUploadSignedURL(celebName, celebImageType, override);
+            const imageExists = await profileImageController.checkImageExist(imageFileName);
+            const response = {
+                Message: 'DONE',
+                ImageExists: imageExists
+            };
+
             console.log(chalk.info(JSON.stringify(response)));
             res.send(response);
         }
         catch(err) {
+            console.error(chalk.error(`{ERR: ${err.message}}`));
+            res.send({
+                ERR: err.message
+            });
+        }
+    })
+    
+    /**
+     * 
+     * Route to GET the CDN link for downloading celeb image;
+     * 
+     */
+    router.get('/image/downloadurl', async (req, res) => {
+        const imageFileName = req.query.celeb_image_file_name;
+
+        try {
+            const imageExists = await profileImageController.checkImageExist(imageFileName);
+            if(imageExists) {
+                const url = await profileImageController.getDownloadUrl(imageFileName);
+                const response = {
+                    Message: 'DONE',
+                    Response: 'Celeb Image Download URL Fetched',
+                    URL: url
+                };
+
+                console.log(chalk.info(JSON.stringify(response)));
+                res.send(response);
+
+            } else {
+                const response = {
+                    ERR: `Image Doesn't Exists`
+                };
+
+                console.log(chalk.info(JSON.stringify(response)));
+                res.send(response);
+            }
+        }
+        catch(err) {
             console.error(chalk.error(`{ERR: ${err}}`));
-            res.status(401).send({
+            res.send({
                 ERR: err.message
             });
         }
@@ -41,53 +92,92 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
 
     /**
      * 
-     * Route to GET if the Image exists in the GCS
+     * Route to DELETE the celeb image, if the celeb profile has not been created yet
      * 
      */
-    router.get(`/profile/image/exists`, async (req, res) => {
-        const celebName = req.query.celeb_name;
-        const imageType = req.query.image_type;
-
-        const celebFileName = `celebs/${celebName}.${imageType}`;
+    router.delete('/image/delete', async (req, res) => {
+        const imageFileName = req.query.celeb_image_file_name;
 
         try {
-            const response = await celebProfileController.profileImageController.checkImageExist(celebFileName);
+            const response = await profileImageController.deleteImage(imageFileName);
             console.log(chalk.info(JSON.stringify(response)));
             res.send(response);
         }
         catch(err) {
-            console.error(chalk.error(`{ERR: ${err}}`));
+            console.error(chalk.error(`ERR: ${err}`));
             res.send({
-                ERR: err.message
+                ERR: err
             });
         }
-    })
-
+    });
     
     /**
      * 
-     * Route to POST the celeb Profile data in the DB
+     * Route to POST the celeb Profile data in the DB and upload celeb image in the 
+     * S3 Bucket. It uses multipart/form-data handling controllers.
      * 
      */
-    router.post('/profile/data', async (req, res) => {
-        const celebName = req.body.celeb_name;
-        const celebCategory = req.body.celeb_category;
-        const celebIntroduction = req.body.celeb_introduction;
-        const celebResponseTime = req.body.celeb_response_time;
-        const celebImageType = req.body.celeb_image_type;
+    router.post('/profile/upload', 
+        celebProfileDataMultipart.single('celeb_image'),
+        async (req, res) => {
 
-        try {
-            const response = await celebProfileController.profileDataController.createNewCelebAccount(celebName, celebCategory, celebIntroduction, celebResponseTime, celebImageType)
-            console.log(chalk.info(JSON.stringify(response)));
-            res.send(response);
+            //Initialize Variables
+            const celebName = req.body.celeb_name;
+            const celebCategory = req.body.celeb_category;
+            const celebIntroduction = req.body.celeb_introduction;
+            const celebResponseTime = req.body.celeb_response_time;
+            const imageFileName = req.body.celeb_image_file_name;
+            const imageMIMEType = req.file.mimetype;
+            const imageFileReadStream = fs.createReadStream(req.file.path);
+
+            try {
+                //Check if Image and Profile Exists already
+                const imageExists = await profileImageController.checkImageExist(imageFileName);
+                const profileExists = await profileDataController.checkIfProfileExists(celebName);
+
+                if(profileExists) {
+                    //If Profile Exists, no need to do any thing.
+                    
+                    res.send({
+                        ERR: 'Profile Already Exists'
+                    });
+
+                } else if(imageExists) {
+                    //If Profile doesn't exists, but image has already been uploaded in the last requests,
+                    //then no need to upload image again, just return the CDN link for the image, and
+                    //upload the profile in the database
+                    
+                    const celebImageLink = profileImageController.getDownloadUrl(imageFileName);
+                    const response = await profileDataController.createNewCelebAccount(celebName, celebCategory, celebIntroduction, celebResponseTime, celebImageLink);
+
+                    response['ImageExists'] = true;
+                    console.log(chalk.info(JSON.stringify(response)));
+                    res.send(response);
+
+                } else {
+                    //Upload Image and then the profile in the database. None of the exists
+
+                    const celebImageLink = await profileImageController.uploadCelebImage(imageFileReadStream, imageFileName, imageMIMEType);
+                    const response = await profileDataController.createNewCelebAccount(celebName, celebCategory, celebIntroduction, celebResponseTime, celebImageLink);
+
+                    response['ImageExists'] = false;
+                    console.log(chalk.info(JSON.stringify(response)));
+                    res.send(response);
+
+                }
+            }
+            catch(err) {
+                console.error(chalk.error(`ERR: ${err}`));
+                res.send({
+                    ERR: err.message
+                });
+            }
+            finally {
+                //Remove Celeb's Temp Image, stored in the temp/ folder
+                fs.unlinkSync(req.file.path);
+            }
         }
-        catch(err) {
-            console.error(chalk.error(`{ERR: ${err}}`));
-            res.send({
-                ERR: err.message
-            });
-        }
-    })
+    );
 
 
     /**
@@ -97,14 +187,23 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
      */
     router.delete('/profile/delete', async (req, res) => {
         const celebName = req.query.celeb_name;
+        const imageFileName = req.query.celeb_image_file_name;
 
         try {
-            const response = await celebProfileController.profileDataController.deleteCelebProfile(celebName);
+            const profileExists = await profileDataController.checkIfProfileExists(celebName);
+            if(!profileExists) {
+                res.send({
+                    Message: 'DONE',
+                    Response: 'No Such Profile Exists.'
+                });
+            };
+
+            const response = await profileDataController.deleteCelebProfile(celebName, imageFileName);
             console.log(chalk.info(JSON.stringify(response)));
             res.send(response);
         }
         catch(err) {
-            console.error(chalk.error(`{ERR: ${err}}`));
+            console.error(chalk.error(`ERR: ${err}`));
             res.send({
                 ERR: err.message
             });
@@ -119,17 +218,18 @@ module.exports = (databaseConnection, firebaseBucket, chalk) => {
      */
     router.get('/profile/fetch/all', async (req, res) => {
         try {
-            const response = await celebProfileController.profileDataController.getAllCelebProfile();
+            const response = await profileDataController.getAllCelebProfile();
             console.log(chalk.info(JSON.stringify(response)));
             res.send(response);
         }
         catch(err) {
-            console.error(chalk.error(`{ERR: ${err}}`));
+            console.error(chalk.error(`ERR: ${err}`));
             res.send({
                 ERR: err.message
             });
         }
     });
 
+  
     return router;
 };

@@ -1,9 +1,10 @@
 {
     "development": {
       "username": "Sarthak",
-      "password": "Sarthak111@",
+      "password": "Sarthak111",
       "database": "celebs",
-      "host": "127.0.0.1",
+      "host": "celebs.cau4kmidmwkk.us-east-2.rds.amazonaws.com",
+      "port": "5432",
       "dialect": "postgres"
     },
     "production": {

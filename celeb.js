@@ -13,10 +13,9 @@ require('dotenv').config();
 const bodyParser = require('body-parser');
 const express = require('express');
 const celebRoutes = require('./routes/routes');
-const firebaseAdmin = require('firebase-admin');
-const firebaseServiceKey = require('./config/firebase.json');
 const morgan = require('morgan');
 const chalk = require('./chalk.console');
+const AWS = require('aws-sdk');
 
 const PORT = process.env.PORT || 7000;
 const ENV = process.env.NODE_ENV;
@@ -24,30 +23,39 @@ const ENV = process.env.NODE_ENV;
 let databaseConnection;
 
 if(ENV === 'development') {
+    console.log(chalk.info('##### SERVER RUNNING IN DEVELOPMENT MODE #####'));
     databaseConnection = require('./connections/PGConnection')('development');
-} else {
+} else if(ENV == 'production') {
+    console.log(chalk.info('##### SERVER RUNNING IN PRODUCTION MODE #####'));
     databaseConnection = require('./connections/PGConnection')('production');
 }
+else {
+    console.error(chalk.error('##### NO ENV PROVIDED #####'));
+    process.exit(1);
+}
 
-console.log(chalk.info(`ENV = ${ENV}`));
 const app = express();
-
-firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.cert(firebaseServiceKey),
-    storageBucket: "twilight-cloud.appspot.com"
-})
-
-const firebaseBucket = firebaseAdmin.storage().bucket();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
-// app.use(morgan('dev'));
+app.use(morgan('dev'));
+
+AWS.config.getCredentials((err) => {
+    if(err) {
+        console.error(chalk.error(`CREDENTIALS NOT LOADED`));
+        process.exit(1);
+    }
+    else console.log(chalk.info(`##### AWS ACCESS KEY IS VALID #####`));
+});
+
+AWS.config.update({region: 'us-east-2'});
+const S3Client = new AWS.S3({apiVersion: '2006-03-01'});
 
 databaseConnection
     .authenticate()
     .then(() => console.info(chalk.success(`Celebs Database Connection Established Successfully!`)))
-    .then(() => app.use('/admin/celeb', celebRoutes(databaseConnection, firebaseBucket, chalk)))
+    .then(() => app.use('/admin/celeb', celebRoutes(databaseConnection, S3Client)))
     .then(() => console.info(chalk.success(`Routes Established Successfully!`)))
-    .catch((err) => console.error(chalk.error(`Celebs Database Connection Failed!\nError:${err}`)))
+    .catch((err) => console.error(chalk.error(`Celebs Database Connection Failed!\nError:${err}`)));
 
 app.listen(PORT, () => console.log(chalk.info(`Server is running on port ${PORT}`)))
