@@ -35,7 +35,7 @@ module.exports = (databaseConnection, S3Client) => {
         return new Promise((resolve, reject) => {
             try {
                 S3Client.headObject(imageParam, (err, metadate) => {
-                    if(err.code === 'NotFound') {
+                    if(err && err.statusCode === 404) {
                         return resolve(false);
                     } else if(err) {
                         return reject(err);

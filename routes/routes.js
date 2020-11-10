@@ -133,6 +133,7 @@ module.exports = (databaseConnection, S3Bucket) => {
             try {
                 //Check if Image and Profile Exists already
                 const imageExists = await profileImageController.checkImageExist(imageFileName);
+                console.log(imageExists);
                 const profileExists = await profileDataController.checkIfProfileExists(celebName);
 
                 if(profileExists) {
